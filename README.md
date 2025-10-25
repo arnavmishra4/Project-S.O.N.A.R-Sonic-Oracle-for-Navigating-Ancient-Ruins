@@ -45,8 +45,10 @@ Transforms multi-modal geospatial data into interpretable audio landscapes.
 - `{transect}_geospatial_metadata.json` — Audio-to-coordinate mapping
 - `{transect}_visualization.png` — Input data visualization
 
-![Geospatial Sonification Process](images/Screenshot 2025-10-26 031458.png)
-*Example: LiDAR elevation data transformed into acoustic landscape with archaeological anomaly markers*
+<div align="center">
+  <img src="./images/Screenshot%202025-10-26%20031458.png" alt="Geospatial Sonification Process" width="800"/>
+  <p><em>Example: LiDAR elevation data transformed into acoustic landscape with archaeological anomaly markers</em></p>
+</div>
 
 ---
 
@@ -162,6 +164,10 @@ sonar-ai/
 │   ├── motif_recognition.py     # Module 4: DTW pattern matching
 │   └── map_visualization.py     # Module 5: Interactive mapping
 │
+├── images/                      # Visualization screenshots
+│   ├── Screenshot 2025-10-26 031458.png
+│   └── Screenshot 2025-10-26 031519.png
+│
 ├── requirements.txt
 └── README.md
 ```
@@ -217,8 +223,10 @@ All outputs saved in `data/` with corresponding module subdirectories.
 
 ## 📊 Results
 
-![Archaeological Site Detection Results](path/to/results_map.png)
-*Interactive map showing detected archaeological anomalies (orange) and classified signatures (red) overlaid on Amazon rainforest terrain. High-confidence detections correspond to known geoglyph and earthwork locations.*
+<div align="center">
+  <img src="./images/Screenshot%202025-10-26%20031519.png" alt="Archaeological Site Detection Results" width="800"/>
+  <p><em>Interactive map showing detected archaeological anomalies (orange) and classified signatures (red) overlaid on Amazon rainforest terrain. High-confidence detections correspond to known geoglyph and earthwork locations.</em></p>
+</div>
 
 ---
 
@@ -243,6 +251,8 @@ If you use SONAR in your research:
 **Arnav Mishra**  
 AI Researcher · Machine Learning & Computational Archaeology  
 Bhopal, India
+
+[![Kaggle](https://img.shields.io/badge/Kaggle-Profile-20BEFF?style=flat&logo=kaggle)](https://www.kaggle.com/arnavmishra6996)
 
 ---
 
