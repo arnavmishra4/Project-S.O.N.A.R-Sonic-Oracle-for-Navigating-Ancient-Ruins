@@ -1,115 +1,251 @@
-# Project S.O.N.A.R
+# 🌀 S.O.N.A.R
 
-**Sonic Oracle for Navigating Ancient Ruins**
+### **Sonic Oracle for Navigating Ancient Ruins**
 
----
+An AI-powered acoustic archaeology system that transforms Amazon rainforest geospatial data into sound, using machine listening to detect hidden archaeological sites beneath dense canopy.
 
-## Module 1: Geospatial Sonification Engine
-
-**Dataset:**
-
-* LiDAR DTMs: Digital Terrain Models representing ground elevation.
-* Satellite Imagery: Multi-band Sentinel-2 data for wet and dry seasons, used to calculate vegetation (NDVI) and water (NDWI) indices.
-* Hydrological Maps: Pre-processed HydroSHEDS data including flow direction, flow accumulation, and conditioned elevation models.
-
-**What it does:**
-
-* Load & Mosaic: Reads individual LiDAR DTM tiles and merges them into a single high-resolution map for the transect.
-* Grid & Align: Divides the primary DTM map into a grid. For each grid cell, it aligns and extracts corresponding data from the lower-resolution satellite and hydrological layers.
-* Data-to-Sound Mapping: Maps each cell's data to specific audio parameters (e.g., Elevation -> Bass Pitch, Vegetation -> Melody, Slope -> Rhythm).
-* Anomaly Highlighting: Overlays a distinct, piercing sound on pre-defined coordinates corresponding to potential archaeological sites.
-* Assemble & Export: Generates an audio "chunk" for each grid cell, then concatenates all chunks into a final, full-length stereo WAV file.
-
-**Output:**
-
-* A final, full-length .wav audio file for each transect.
-* A .json metadata file linking audio timestamps to geographic coordinates.
-* A .png visualization image of the input data for each transect.
+**Author:** [Arnav Mishra](https://www.kaggle.com/arnavmishra6996)  
+**Competition:** [OpenAI to Z Challenge](https://www.kaggle.com/competitions/openai-to-z-challenge)  
+**Project Notebook:** [Whispers Beneath the Canopy](https://www.kaggle.com/code/arnavmishra6996/whispers-beneath-the-canopy)
 
 ---
 
-## Module 2: Sonic Feature Embedding Module (VGGish)
+## 🌍 Overview
 
-**Dataset:**
+**SONAR (Sonic Oracle for Navigating Ancient Ruins)** is a novel multi-stage AI pipeline that converts LiDAR terrain data, satellite imagery, and hydrological patterns into structured soundscapes — then uses deep audio embeddings, anomaly detection, and acoustic pattern matching to identify archaeological signatures invisible to traditional remote sensing.
 
-* Primary Input: The final sonified .wav files generated for each transect from Module 1.
-* Pre-trained Model: The Google VGGish model, loaded directly from TensorFlow Hub.
-
-**What it does:**
-
-* Load Model: Initializes and loads the pre-trained VGGish model.
-* Chunk & Preprocess Audio: Reads the long audio files in memory-efficient chunks, converts them to mono, and resamples them to the required 16kHz.
-* Extract Embeddings: Passes each preprocessed audio chunk through the VGGish model to generate a sequence of 128-dimensional feature vectors.
-* Aggregate & Save: Combines the embeddings from all chunks into a single large array and saves it as a .npy file.
-
-**Output:**
-
-* A set of .npy files, each containing a 2D NumPy array of 128-dimensional VGGish embeddings for a corresponding transect.
+**The Core Innovation:** Instead of analyzing geospatial data visually, SONAR **sonifies** it — mapping elevation to bass frequencies, vegetation density to melodic patterns, and terrain slope to rhythmic structures. Archaeological features produce distinctive acoustic anomalies that can be detected through machine listening.
 
 ---
 
-## Module 3: Sonic Anomaly Detection Module (Isolation Forest)
+## 🧩 Pipeline Architecture
 
-**Dataset:**
+### **Module 1: Geospatial Sonification Engine**
 
-* Primary Input: The VGGish embedding .npy files from Module 2.
-* Training Baseline: A specific subset of embeddings designated as "normal" (e.g., from non-archaeological areas).
-* Geospatial Metadata: The .json files from Module 1, used to link anomalies back to their geographic locations.
+Transforms multi-modal geospatial data into interpretable audio landscapes.
 
-**What it does:**
+**Input Data:**
+- **LiDAR DTMs** — High-resolution digital terrain models (ground elevation)
+- **Sentinel-2 Satellite Imagery** — Multi-band data for wet/dry seasons (NDVI, NDWI indices)
+- **HydroSHEDS** — Flow direction, flow accumulation, conditioned elevation models
 
-* Train Model: Trains an IsolationForest model exclusively on the "normal" embeddings to learn the patterns of a typical soundscape.
-* Predict on All Transects: Uses the trained model to assign an anomaly score and a binary flag (-1 for anomaly, 1 for normal) to every embedding segment.
-* Align & Aggregate: Maps the time-based anomaly flags back to the space-based geospatial grid cells. A cell is flagged as anomalous if any of its underlying sonic segments are outliers.
-* Save Results: Saves a new JSON file annotating each geospatial cell with an is\_anomalous\_flag and a mean anomaly score.
+**Processing Pipeline:**
+1. **Load & Mosaic** — Merge individual LiDAR DTM tiles into unified high-resolution transect maps
+2. **Grid & Align** — Divide DTM into spatial grid cells, extract corresponding satellite and hydrological data
+3. **Data-to-Sound Mapping** — Convert geospatial features to audio parameters:
+   - Elevation → Bass pitch
+   - Vegetation density (NDVI) → Melodic frequencies
+   - Terrain slope → Rhythmic patterns
+   - Water presence (NDWI) → Textural layers
+4. **Anomaly Highlighting** — Overlay distinct acoustic markers on known archaeological coordinates
+5. **Assembly** — Concatenate per-cell audio chunks into full-length stereo WAV files
 
 **Output:**
+- `{transect}_full_sonification_SOTA.wav` — Complete sonified landscape
+- `{transect}_geospatial_metadata.json` — Audio-to-coordinate mapping
+- `{transect}_visualization.png` — Input data visualization
 
-* A set of \_anomaly\_results.json files that create a map of sonically unusual locations by flagging the specific geospatial cells that correspond to anomalous sounds.
+![Geospatial Sonification Process](path/to/sonification_visualization.png)
+*Example: LiDAR elevation data transformed into acoustic landscape with archaeological anomaly markers*
 
 ---
 
-## Module 4: Archaeological Signature Recognition Module (DTW)
+### **Module 2: Sonic Feature Embedding (VGGish)**
 
-**Dataset:**
+Extracts deep audio representations from sonified landscapes using Google's pre-trained VGGish model.
 
-* VGGish Embeddings & Anomaly Flags: The outputs from Modules 2 and 3.
-* Motif Library: A custom library built by extracting embedding sequences from manually-defined time segments of sonifications known to contain specific archaeological features.
+**Model:** [Google VGGish](https://tfhub.dev/google/vggish/1) — AudioSet-trained audio embedding network
 
-**What it does:**
+**Processing Pipeline:**
+1. **Load Model** — Initialize pre-trained VGGish from TensorFlow Hub
+2. **Chunk Audio** — Stream large audio files in memory-efficient 10s segments
+3. **Preprocess** — Convert to mono, resample to 16kHz (VGGish requirement)
+4. **Extract Embeddings** — Generate 128-dimensional feature vectors per 0.96s audio segment
+5. **Aggregate** — Combine embeddings into temporal sequence arrays
 
-* Build Motif Library: Extracts sequences of VGGish embeddings from pre-defined time segments in known archaeological transects to create a reference library of sonic "motifs".
-* Isolate Anomalous Segments: Focuses only on the geospatial cells that were previously flagged as anomalous.
-* Compare Signatures with DTW: Uses Dynamic Time Warping (DTW) to measure the similarity between an unknown anomaly's signature and every known motif in the library.
-* Identify Best Match & Classify: For each anomaly, it finds the known motif with the lowest DTW distance. If the distance is below a set threshold, the anomaly is "matched" and classified.
-* Save Classified Results: Saves a final JSON file that annotates each anomalous cell with its best-matching motif type and a similarity score.
-
-**Output:**
-
-* A set of \_motif\_recognition\_results.json files that label each anomalous location with a potential archaeological signature type (e.g., "Geoglyph\_Cluster") and a similarity score.
+**Output:** `audio_embeddings/{transect}_embeddings.npy` — 2D array of 128-dim embeddings
 
 ---
 
-## Module 5: Final Integration & Interactive Visualization Module
+### **Module 3: Sonic Anomaly Detection (Isolation Forest)**
 
-**Dataset:**
+Identifies acoustically unusual regions that may indicate archaeological features.
 
-* Geospatial Metadata: The .json files containing the original grid cell coordinates (from Module 1).
-* Motif Recognition Results: The final .json analysis files containing anomaly flags and motif classifications (from Module 4).
-* AI-Generated Context: External .txt files containing pre-generated textual summaries or historical context for each transect.
+**Training Strategy:**
+- Train Isolation Forest exclusively on "normal" landscape embeddings (non-archaeological areas)
+- Learn typical acoustic patterns of natural terrain
+- Flag deviations as potential archaeological anomalies
 
-**What it does:**
+**Processing Pipeline:**
+1. **Train Baseline Model** — Fit Isolation Forest on embeddings from verified normal transects
+2. **Score All Segments** — Compute anomaly scores for every audio segment across all transects
+3. **Spatial Alignment** — Map time-based anomaly flags back to geospatial grid cells
+4. **Cell Aggregation** — Flag cells as anomalous if any underlying audio segments are outliers
+5. **Export Results** — Generate annotated geospatial anomaly maps
 
-* Load All Processed Data: For each transect, it loads all associated output files.
-* Coordinate Transformation: Converts the geographic coordinates of each grid cell into the standard Latitude/Longitude format required for web maps.
-* Generate Interactive Map: Initializes a folium interactive map for each transect.
-* Draw & Color-Code Cells: Draws a rectangle on the map for every grid cell, with the color determined by its final status:
+**Output:** `anomaly_results/{transect}_anomaly_results.json` — Geospatial cells with anomaly flags and scores
 
-  * Blue: Normal.
-  * Orange: Anomalous (unmatched).
-  * Red: Matched Anomaly (high-confidence).
-* Display Final Results: Renders the final interactive map and its accompanying text directly into the notebook output for immediate review.
+---
 
-**Output:**
+### **Module 4: Archaeological Signature Recognition (DTW)**
 
-* A series of interactive, color-coded maps rendered in the notebook, providing a comprehensive visual summary of the entire analysis and highlighting potential archaeological sites.
+Classifies detected anomalies by matching them to known archaeological acoustic patterns.
+
+**Approach:**
+- Build reference library of acoustic "motifs" from confirmed archaeological sites
+- Use Dynamic Time Warping (DTW) to measure similarity between unknown anomalies and known signatures
+- Classify anomalies based on best-matching motif patterns
+
+**Processing Pipeline:**
+1. **Build Motif Library** — Extract embedding sequences from manually-defined time segments of known archaeological features
+2. **Isolate Anomalous Segments** — Focus analysis on cells flagged by Module 3
+3. **DTW Comparison** — Measure acoustic similarity between each anomaly and all reference motifs
+4. **Pattern Matching** — Identify best-matching motif with lowest DTW distance
+5. **Classification** — Assign archaeological feature type if similarity exceeds threshold
+
+**Output:** `motif_recognition_results/{transect}_motif_recognition_results.json` — Classified anomalies with confidence scores
+
+---
+
+### **Module 5: Interactive Visualization (Folium)**
+
+Generates color-coded interactive maps displaying analysis results.
+
+**Processing Pipeline:**
+1. **Data Integration** — Load geospatial metadata, anomaly flags, and motif classifications
+2. **Coordinate Transformation** — Convert to WGS84 lat/lon for web mapping
+3. **Map Generation** — Create interactive Folium maps with grid overlay
+4. **Color Coding:**
+   - 🟦 **Blue** — Normal terrain
+   - 🟧 **Orange** — Detected anomaly (unmatched)
+   - 🔴 **Red** — Matched archaeological signature (high confidence)
+
+**Output:** Interactive HTML maps rendered in notebook with clickable cells showing detailed analysis
+
+---
+
+## 🛰️ Data Sources
+
+| Source | Description | Resolution |
+|--------|-------------|------------|
+| [NASA LiDAR 2008–2018](https://www.kaggle.com/datasets/arnavmishra6996/nasa-amazon-lidar-2008-2018) | Ground elevation (Digital Terrain Models) | 1m |
+| [Sentinel-2 Satellite](https://scihub.copernicus.eu/) | Multi-spectral imagery (NDVI, NDWI) | 10-20m |
+| [HydroSHEDS](https://www.hydrosheds.org/) | Hydrological flow patterns and DEM | 90m |
+| [VGGish (Google)](https://tfhub.dev/google/vggish/1) | Pre-trained audio embedding model | — |
+
+---
+
+## 🔬 Research Impact
+
+> **SONAR demonstrates that archaeological features create detectable acoustic signatures when terrain data is sonified. This approach enables machine audition-based site discovery in regions where traditional remote sensing fails due to dense vegetation cover.**
+
+Key innovations:
+- **Cross-modal translation** — Geospatial → Acoustic domain conversion
+- **Anomaly-driven discovery** — Unsupervised detection without labeled training data
+- **Interpretable signatures** — DTW-based pattern matching preserves archaeological context
+
+---
+
+## ⚙️ Repository Structure
+
+```
+sonar-ai/
+│
+├── main.py                      # End-to-end pipeline orchestration
+├── config.py                    # Configuration and hyperparameters
+├── data_loader.py               # Multi-source data loading utilities
+│
+├── models/
+│   ├── sonification.py          # Module 1: Data-to-audio conversion
+│   ├── vggish_embedding.py      # Module 2: Audio feature extraction
+│   ├── anomaly_detection.py     # Module 3: Isolation Forest
+│   ├── motif_recognition.py     # Module 4: DTW pattern matching
+│   └── map_visualization.py     # Module 5: Interactive mapping
+│
+├── requirements.txt
+└── README.md
+```
+
+---
+
+## 📦 Installation
+
+```bash
+git clone https://github.com/arnavmishra6996/sonar-ai.git
+cd sonar-ai
+pip install -r requirements.txt
+```
+
+**Requirements:**
+```
+tensorflow>=2.13.0
+tensorflow-hub
+numpy
+scipy
+librosa
+soundfile
+folium
+scikit-learn
+rasterio
+```
+
+---
+
+## 🚀 Usage
+
+```bash
+python main.py
+```
+
+Pipeline executes sequentially:
+1. Sonification → 2. Embedding → 3. Anomaly Detection → 4. Motif Recognition → 5. Visualization
+
+All outputs saved in `data/` with corresponding module subdirectories.
+
+---
+
+## 🧠 Related Kaggle Resources
+
+| Resource | Type | Link |
+|----------|------|------|
+| 🌀 Whispers Beneath the Canopy | Notebook | [View](https://www.kaggle.com/code/arnavmishra6996/whispers-beneath-the-canopy) |
+| 🌲 NASA Amazon LiDAR 2008–2018 | Dataset | [View](https://www.kaggle.com/datasets/arnavmishra6996/nasa-amazon-lidar-2008-2018) |
+| 💧 HydroSHEDS South America | Dataset | [View](https://www.kaggle.com/datasets/arnavmishra6996/south-america-hydroshed-dataset) |
+| 🎵 Sonification + VGGish Model | Model | [View](https://www.kaggle.com/models/arnavmishra6996/new-sonification-50km-vggish-anomaly-detect) |
+
+---
+
+## 📊 Results
+
+![Archaeological Site Detection Results](path/to/results_map.png)
+*Interactive map showing detected archaeological anomalies (orange) and classified signatures (red) overlaid on Amazon rainforest terrain. High-confidence detections correspond to known geoglyph and earthwork locations.*
+
+---
+
+## 🧾 Citation
+
+If you use SONAR in your research:
+
+```bibtex
+@misc{mishra2025sonar,
+  author = {Mishra, Arnav},
+  title = {S.O.N.A.R: Sonic Oracle for Navigating Ancient Ruins},
+  year = {2025},
+  publisher = {Kaggle},
+  howpublished = {\url{https://www.kaggle.com/code/arnavmishra6996/whispers-beneath-the-canopy}}
+}
+```
+
+---
+
+## 🏁 Author
+
+**Arnav Mishra**  
+AI Researcher · Machine Learning & Computational Archaeology  
+Bhopal, India
+
+---
+
+## 🪶 License
+
+MIT License © 2025 Arnav Mishra
